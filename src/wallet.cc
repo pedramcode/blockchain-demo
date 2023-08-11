@@ -55,12 +55,16 @@ std::string generatePrivateKey() {
     RSA_free(rsa);
     BN_free(bn);
 
-    return privateKey;
+    // Base64 encode the private key
+    return bchain::utils::base64_encode(reinterpret_cast<const unsigned char *>(privateKey.c_str()), privateKey.length());
 }
 
 std::string generatePublicKey(const std::string &privateKeyStr) {
+    // Decode the base64 encoded private key
+    std::string decodedPrivateKey = bchain::utils::base64_decode(privateKeyStr);
+
     RSA *rsa = NULL;
-    BIO *bio = BIO_new_mem_buf(privateKeyStr.c_str(), -1);
+    BIO *bio = BIO_new_mem_buf(decodedPrivateKey.c_str(), -1);
     rsa = PEM_read_bio_RSAPrivateKey(bio, &rsa, NULL, NULL);
 
     RSA *pubKey = RSAPublicKey_dup(rsa);
@@ -76,15 +80,19 @@ std::string generatePublicKey(const std::string &privateKeyStr) {
     RSA_free(rsa);
     RSA_free(pubKey);
 
-    return publicKey;
+    // Base58 encode the public key
+    return bchain::utils::base58_encode(reinterpret_cast<const unsigned char *>(publicKey.c_str()), publicKey.length());
 }
 
 std::string signData(const std::string &dataStr, const std::string &privateKeyStr) {
+    // Decode the base58 encoded private key
+    std::string decodedPrivateKey = bchain::utils::base58_decode(privateKeyStr);
+
     RSA *rsa = NULL;
-    BIO *bio = BIO_new_mem_buf(privateKeyStr.c_str(), -1);
+    BIO *bio = BIO_new_mem_buf(decodedPrivateKey.c_str(), -1);
     rsa = PEM_read_bio_RSAPrivateKey(bio, &rsa, NULL, NULL);
 
-    const unsigned char *data = reinterpret_cast<const unsigned char *>(dataStr.c_str());
+    const unsigned char *data = reinterpret_cast<const unsigned char *>(dataStr.data()); // Use data() instead of c_str()
     unsigned char signature[RSA_size(rsa)];
     unsigned int signatureLength;
 
@@ -96,14 +104,16 @@ std::string signData(const std::string &dataStr, const std::string &privateKeySt
     BIO_free_all(bio);
     RSA_free(rsa);
 
-    std::string signatureStr(reinterpret_cast<const char *>(signature), signatureLength);
-
-    return signatureStr;
+    // Base64 encode the signature
+    return bchain::utils::base64_encode(signature, signatureLength);
 }
 
 bool verifySignature(const std::string &dataStr, const std::string &signatureStr, const std::string &publicKeyStr) {
+    // Decode the base58 encoded public key
+    std::string decodedPublicKey = bchain::utils::base58_decode(publicKeyStr);
+
     RSA *rsa = NULL;
-    BIO *bio = BIO_new_mem_buf(publicKeyStr.c_str(), -1);
+    BIO *bio = BIO_new_mem_buf(decodedPublicKey.c_str(), -1);
     rsa = PEM_read_bio_RSAPublicKey(bio, &rsa, NULL, NULL);
 
     const unsigned char *data = reinterpret_cast<const unsigned char *>(dataStr.c_str());

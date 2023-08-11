@@ -1,1 +1,2 @@
 #include "bchain_utils/time.h"
+#include "bchain_utils/encoding.h"

@@ -7,6 +7,8 @@
 #include <openssl/pem.h>
 #include <openssl/err.h>
 
+#include "utils"
+
 namespace bchain {
     class Wallet{
     private:
