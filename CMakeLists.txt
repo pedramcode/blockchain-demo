@@ -1,21 +1,22 @@
 cmake_minimum_required(VERSION 3.20)
 
+set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_COMPILE_FEATURES -g -Wall -Werr -Wextra -O3)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -O3 -g")
 
-include_directories(${PROJECT_NAME} PRIVATE
-        ${CMAKE_SOURCE_DIR}/include)
+include_directories(PUBLIC 
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/lib)
 
 project(blockchain LANGUAGES CXX VERSION 0.0.1)
 file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.cc)
-add_executable(${PROJECT_NAME} ${SOURCES})
-
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 file(GLOB_RECURSE TESTS ${CMAKE_SOURCE_DIR}/tests/test_*.cc)
 foreach(path ${TESTS})
         get_filename_component(name ${path} NAME)
-        get_filename_component(test_name ${path} NAME_WE)
-        add_executable(${test_name}.out ${CMAKE_SOURCE_DIR}/tests/${name})
-        add_test(NAME ${test_name} COMMAND ${name}.out)
+        add_executable(${name}.out ${path})
+        target_link_libraries(${name}.out PRIVATE ${PROJECT_NAME})
+        add_test(NAME ${name} COMMAND ${name}.out)
 endforeach()
 enable_testing()
