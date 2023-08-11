@@ -19,6 +19,7 @@ namespace bchain {
         std::vector<Transaction> _trxs;
     public:
         Block();
-        std::string operator()();
+        std::string operator()(); // Generate hash
+        void add_trx(const Transaction& trx);
     };
 }
