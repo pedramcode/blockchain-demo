@@ -1,1 +1,3 @@
-# blockchain-demo
+# Blockchain
+
+C++ blockchain demonstration
